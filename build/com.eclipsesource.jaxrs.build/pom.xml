@@ -54,10 +54,24 @@
     <repository>
       <id>connector-dependencies</id>
       <layout>p2</layout>
-      <url>file://${basedir}/../../build/com.eclipsesource.jaxrs.connector.target/p2</url>
+      <url>file:///${basedir}/../../build/com.eclipsesource.jaxrs.connector.target/p2</url>
+    </repository>
+    <repository>
+      <id>local-dependencies</id>
+      <layout>p2</layout>
+      <url>file:///C:/DATA/Design4S/ThirdParty/p2-repository/p2</url>
     </repository>
   </repositories>	
-  
+      <distributionManagement>
+        <!-- this will make sure, when deploying, that the files are installed on the unix box -->
+    <repository>
+      <id>local-distro</id>
+      <name>local distribution</name>
+      <layout>p2</layout>
+      <url>file:///C:/DATA/Design4S/ThirdParty/p2-repository/p2</url>
+    </repository>
+    </distributionManagement>
+
 	<build>
 		<plugins>
 			<plugin>

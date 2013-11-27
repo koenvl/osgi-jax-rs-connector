@@ -18,6 +18,7 @@ import javax.servlet.ServletException;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Request;
 
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -34,11 +35,22 @@ public class JerseyContext {
   private boolean isApplicationRegistered;
 
   public JerseyContext( HttpService httpService, String rootPath ) {
+    System.out.println("Adapted JerseyContext: calling constructor");
     this.httpService = httpService;
     this.rootPath = rootPath == null ? "/services" : rootPath;
     this.application = new RootApplication();
     disableAutoDiscovery();
-    this.servletContainer = new ServletContainer( ResourceConfig.forApplication( application ) );
+    ResourceConfig myApplication = makeResourceConfig();
+    this.servletContainer = new ServletContainer( myApplication );
+    System.out.println("Adapted JerseyContext: called constructor");
+  }
+
+  private ResourceConfig makeResourceConfig() {
+    System.out.println("Adapted JerseyContext: registering MultiPartFeature");
+    ResourceConfig myApplication = ResourceConfig.forApplication( application ).packages("com.design4s.catalog4s.http.restful")
+        .register(MultiPartFeature.class);
+    System.out.println("Adapted JerseyContext: registered MultiPartFeature");
+    return myApplication;
   }
 
   private void disableAutoDiscovery() {
@@ -55,7 +67,8 @@ public class JerseyContext {
       ClassLoader original = getContextClassloader();
       try {
         Thread.currentThread().setContextClassLoader( Request.class.getClassLoader() );
-        getServletContainer().reload( ResourceConfig.forApplication( application ) );
+		ResourceConfig myApplication = makeResourceConfig();
+        getServletContainer().reload( myApplication );
       } finally {
         resetContextClassloader( original );
       }
@@ -111,7 +124,8 @@ public class JerseyContext {
   public void removeResource( Object resource ) {
     getRootApplication().removeResource( resource );
     if( isApplicationRegistered ) {
-      getServletContainer().reload( ResourceConfig.forApplication( application ) );
+		ResourceConfig myApplication = makeResourceConfig();
+      getServletContainer().reload( myApplication );
     }
     unregisterServletWhenNoresourcePresents();
   }
@@ -119,7 +133,8 @@ public class JerseyContext {
   private void unregisterServletWhenNoresourcePresents() {
     if( !getRootApplication().hasResources() ) {
       httpService.unregister( rootPath );
-      servletContainer = new ServletContainer( ResourceConfig.forApplication( application ) );
+		ResourceConfig myApplication = makeResourceConfig();
+      servletContainer = new ServletContainer( myApplication );
       isApplicationRegistered = false;
     }
   }
